@@ -21,5 +21,7 @@
   - name: deploy Docker Compose stack
     community.docker.docker_compose:
       project_src: /root/nginxproxymanager
+      pull: yes
+      recreate: yes
       files:
       - docker-compose.yml
