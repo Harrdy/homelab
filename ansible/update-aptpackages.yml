@@ -1,5 +1,4 @@
 ---
-- hosts: webservers
-  hosts: all
+- hosts: all
   roles:
     - ansible-role-update
