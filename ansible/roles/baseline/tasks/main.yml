@@ -30,12 +30,9 @@
       - curl
       - gnupg
       - htop
-      - ncdu
-      - vim
       - zip
       - python3
       - python3-pip
-      - docker-compose
     update_cache: true
     state: present
   become: true
