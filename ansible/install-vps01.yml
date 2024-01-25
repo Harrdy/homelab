@@ -2,9 +2,13 @@
 - hosts: all
 
   tasks:
-  - name: Create Folder nginxproxymanager
-    path: /root/nginxproxymanager2/
-    state: directory
+  - name: Create directory nginxproxymanager
+    ansible.builtin.file:
+      path: /root/nginxproxymanager2/
+      state: directory
+      owner: root
+      group: root
+      mode: '0644'
 
   - name: copy Docker Compose files
     copy:
