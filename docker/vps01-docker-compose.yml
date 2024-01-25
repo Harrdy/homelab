@@ -1,0 +1,46 @@
+version: '3.3'
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      nginxproxynetwork:
+        ipv4_address: 10.5.0.2
+
+  web:
+   image: nginx
+   restart: always
+   volumes:
+    - ./nginx-data:/usr/share/nginx/html
+   networks:
+      nginxproxynetwork:
+        ipv4_address: 10.5.0.3
+   links:
+    - app
+
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    volumes:
+      - ./data-kuma:/app/data
+    restart: always
+    links:
+     - app
+    networks:
+      nginxproxynetwork:
+        ipv4_address: 10.5.0.5
+
+networks:
+  nginxproxynetwork:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
