@@ -1,0 +1,17 @@
+---
+- hosts: all
+
+  tasks:
+  - name: copy Docker Compose files
+    copy:
+      src: ../docker/vps01/nginxproxymanager/{{ item }}
+      dest: /root/nginxproxymanager/{{ item }}
+    loop:
+    - docker-compose.yml
+
+  # use files parameter to use multiple docker-compose.yml files
+  - name: deploy Docker Compose stack
+    community.docker.docker_compose:
+      project_src: /root/nginxproxymanager
+      files:
+      - docker-compose.yml
