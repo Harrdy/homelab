@@ -1,0 +1,34 @@
+---
+# tasks file for update
+
+- name: Import assert.yml
+  ansible.builtin.import_tasks:
+    file: assert.yml
+  run_once: yes
+  delegate_to: localhost
+
+- name: Configure apt
+  when:
+    - ansible_pkg_mgr == "apt"
+  block:
+#    - name: Prevent upgrade for selected packages
+#      ansible.builtin.dpkg_selections:
+#        name: "{{ item }}"
+#        selection: hold
+#      loop: "{{ update_excluded_packages }}"
+
+    - name: Update all software (apt)
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: "dist"
+        cache_valid_time: "3600"
+      environment:
+        DEBIAN_FRONTEND: nointeractive
+
+    - name: Apt autoremove (apt)
+      ansible.builtin.apt:
+        autoremove: "{{ update_autoremove }}"
+      when:
+        - update_autoremove
+      environment:
+        DEBIAN_FRONTEND: nointeractive

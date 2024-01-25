@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  role_name: update
+  description: Install updates on your system.
+  min_ansible_version: "2.12"
+
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+
+  galaxy_tags:
+    - update
+    - security
+    - system
+
+dependencies: []
