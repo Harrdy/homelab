@@ -1,15 +1,4 @@
 ---
-- name: "Set nameserver config"
-  ansible.builtin.template:
-    src: resolv.conf.j2
-    dest: /etc/resolv.conf
-    owner: root
-    group: root
-    mode: 0644
-  become: true
-  when:
-    - name_servers is defined
-
 - name: "Set MOTD"
   ansible.builtin.template:
     src: motd.j2
