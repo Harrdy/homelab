@@ -22,6 +22,6 @@
     community.docker.docker_compose:
       project_src: /root/nginxproxymanager
       pull: yes
-      recreate: yes
+      recreate: always
       files:
       - docker-compose.yml
