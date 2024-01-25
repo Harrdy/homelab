@@ -4,7 +4,7 @@
   tasks:
   - name: Create directory nginxproxymanager
     ansible.builtin.file:
-      path: /root/nginxproxymanager2/
+      path: /root/nginxproxymanager/
       state: directory
       owner: root
       group: root
@@ -13,13 +13,13 @@
   - name: copy Docker Compose files
     copy:
       src: ../docker/vps01/nginxproxymanager/{{ item }}
-      dest: /root/nginxproxymanager2/{{ item }}
+      dest: /root/nginxproxymanager/{{ item }}
     loop:
     - docker-compose.yml
 
   # use files parameter to use multiple docker-compose.yml files
-#  - name: deploy Docker Compose stack
-#    community.docker.docker_compose:
-#      project_src: /root/nginxproxymanager
-#      files:
-#      - docker-compose.yml
+  - name: deploy Docker Compose stack
+    community.docker.docker_compose:
+      project_src: /root/nginxproxymanager
+      files:
+      - docker-compose.yml
