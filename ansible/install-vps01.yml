@@ -10,8 +10,8 @@
     - docker-compose.yml
 
   # use files parameter to use multiple docker-compose.yml files
-  - name: deploy Docker Compose stack
-    community.docker.docker_compose:
-      project_src: /root/nginxproxymanager
-      files:
-      - docker-compose.yml
+#  - name: deploy Docker Compose stack
+#    community.docker.docker_compose:
+#      project_src: /root/nginxproxymanager
+#      files:
+#      - docker-compose.yml
