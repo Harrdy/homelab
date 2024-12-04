@@ -1,6 +1,6 @@
 ---
 - name: Update and upgrade apt packages
-  hosts: {{ hosts }}
+  hosts: "{{ hosts }}"
 
   tasks:
     - name: Update packages with apt
