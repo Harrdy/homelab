@@ -1,0 +1,11 @@
+[srv-prod]
+srv-prod-1.home.xno-sys.de
+srv-prod-2.home.xno-sys.de
+
+
+[vps-x86]
+10.0.55.1
+10.0.55.2
+
+[vps-arm]
+10.0.55.3
