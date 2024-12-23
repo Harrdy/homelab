@@ -5,10 +5,8 @@ GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-TARGETS=("dns1" "dns2" "[2001:4860:4860::8888]")
-WG_INTERFACES=("wg1" "wg2" "wg3")
-TUNNEL_CHECK_IPS=("192.168.170.254" "192.168.0.1" "10.0.55.3")
-PING_COUNT=3
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/check_wireguard_config.sh"
 
 log_error() {
     echo -e "$(date): ${RED}[ERROR]${NC} $1" >&2
