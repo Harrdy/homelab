@@ -1,5 +1,4 @@
 #!/bin/bash
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
@@ -22,10 +21,17 @@ log_address() {
 
 check_ping() {
     local target="$1"
+    local ping_command="ping"
+
     if [[ "$target" =~ ^\[.*\]$ ]]; then
         target=${target:1:-1}
     fi
-    ping6 -c "$PING_COUNT" -W 5 "$target" > /dev/null 2>&1
+
+    if [[ "$target" =~ : ]]; then
+        ping_command="ping6"
+    fi
+
+    $ping_command -c "$PING_COUNT" -W 5 "$target" > /dev/null 2>&1
 }
 
 check_tunnel() {
@@ -35,7 +41,11 @@ check_tunnel() {
 
 get_current_endpoint() {
     local wg_interface="$1"
-    wg show "$wg_interface" endpoints 2>/dev/null | awk '{print $2}' | sed -E 's/\[?([0-9a-f:]+)\]?.*/\1/'
+    endpoint=$(wg show "$wg_interface" endpoints 2>/dev/null | awk '{print $2}' | sed -E 's/^\[?([0-9a-fA-F:.]+)\]?.*$/\1/')
+    if [[ "$endpoint" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+       endpoint=$(echo "$endpoint" | sed -E 's/:.*$//')
+    fi
+    echo $endpoint
 }
 
 resolve_ipv6() {
@@ -68,17 +78,39 @@ handle_tunnel_ip() {
     if check_tunnel "$tunnel_ip"; then
         log_info "Tunnel-IP $(log_address "$tunnel_ip") ist erreichbar."
     else
-        log_error "Tunnel-IP $(log_address "$tunnel_ip") ist nicht erreichbar. Neustart von $wg_interface..."
-        restart_wireguard "$wg_interface"
-        sleep 5
-        if check_tunnel "$tunnel_ip"; then
-            log_info "Tunnel-IP $(log_address "$tunnel_ip") ist nach Neustart von $wg_interface wieder erreichbar."
+        if is_endpoint_defined "$wg_interface"; then
+            log_error "Tunnel-IP $(log_address "$tunnel_ip") ist nicht erreichbar. Neustart von $wg_interface..."
+            restart_wireguard "$wg_interface"
+            sleep 5
+
+            if check_tunnel "$tunnel_ip"; then
+                log_info "Tunnel-IP $(log_address "$tunnel_ip") ist nach Neustart von $wg_interface wieder erreichbar."
+            else
+                log_error "Tunnel-IP $(log_address "$tunnel_ip") bleibt unerreichbar. $wg_interface wird gestoppt."
+                wg-quick down "$wg_interface"
+            fi
         else
-            log_error "Tunnel-IP $(log_address "$tunnel_ip") bleibt unerreichbar. $wg_interface wird gestoppt."
-            wg-quick down "$wg_interface"
+            log_error "Tunnel-IP $(log_address "$tunnel_ip") ist nicht erreichbar."
         fi
     fi
 }
+
+is_endpoint_defined() {
+    local wg_interface="$1"
+    local config_file="/etc/wireguard/${wg_interface}.conf"
+
+    if [[ ! -f "$config_file" ]]; then
+        log_error "Konfigurationsdatei $config_file nicht gefunden."
+        return 1
+    fi
+
+    if grep -qE '^[^#]*Endpoint' "$config_file"; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 
 check_and_restart() {
     local target="$1"
@@ -96,15 +128,24 @@ check_and_restart() {
             return
         fi
 
-        if [[ "$current_endpoint" == "$resolved_ipv6" ]]; then
-            log_info "$(log_address "$target") ist erreichbar, und der Endpoint stimmt überein ($(log_address "$current_endpoint"))."
+        if is_endpoint_defined "$wg_interface"; then
+            if [[ -n "$current_endpoint" && "$current_endpoint" == "$resolved_ipv6" ]]; then
+                log_info "$(log_address "$target") ist erreichbar, und der Endpoint stimmt überein ($(log_address "$current_endpoint"))."
+            else
+                log_error "Endpoint stimmt nicht überein: aktuell $(log_address "$current_endpoint"), erwartet $(log_address "$resolved_ipv6")."
+                restart_wireguard "$wg_interface"
+            fi
         else
-            log_error "Endpoint stimmt nicht überein: aktuell $(log_address "$current_endpoint"), erwartet $(log_address "$resolved_ipv6")."
-            restart_wireguard "$wg_interface"
+            log_info "Kein Endpoint definiert für $wg_interface. Interface bleibt aktiv."
+            sleep 10
         fi
     else
         log_error "$(log_address "$target") ist nicht erreichbar. Stoppe $wg_interface und warte 2 Minuten..."
-        wg-quick down "$wg_interface"
+
+        if !is_endpoint_defined "$wg_interface"; then
+            wg-quick down "$wg_interface"
+        fi
+
         sleep 120
 
         if check_ping "$target"; then
