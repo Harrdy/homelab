@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source_folders=("root@192.168.171.1:/mnt/user/appdata" "root@192.168.171.2:/mnt/user/appdata")
+source_folders=("root@192.168.171.1:/mnt/user/appdata" "root@192.168.171.2:/mnt/user/appdata" "/mnt/user/appdata")
 
 ssh_key="/root/.ssh/id_rsa4096"
 base_backup_folder="/mnt/user/backup/appdata"
