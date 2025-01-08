@@ -27,16 +27,14 @@ check_ping() {
         target=${target:1:-1}
     fi
 
-    if [[ "$target" =~ : ]]; then
-        ping_command="ping6"
-    fi
-
     $ping_command -c "$PING_COUNT" -W 5 "$target" > /dev/null 2>&1
+    return $?
 }
 
 check_tunnel() {
     local check_ip="$1"
     ping -c "$PING_COUNT" -W 5 "$check_ip" > /dev/null 2>&1
+    return $?
 }
 
 get_current_endpoint() {
